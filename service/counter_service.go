@@ -10,6 +10,7 @@ import (
 	"wxcloudrun-golang/db/dao"
 	"wxcloudrun-golang/db/model"
 
+	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,21 @@ type JsonResult struct {
 	Code     int         `json:"code"`
 	ErrorMsg string      `json:"errorMsg,omitempty"`
 	Data     interface{} `json:"data"`
+}
+
+type GptResponse struct {
+	Id      string    `json:"id"`
+	Object  string    `json:"object"`
+	Created int       `json:"created"`
+	Model   string    `json:"model"`
+	Choices []Message `json:"choices"`
+}
+
+type Message struct {
+	Text         string         `json:"text"`
+	Index        int            `json:"index"`
+	FinishReason string         `json:"finish_reason"`
+	Usage        map[string]int `json:"usage"`
 }
 
 // IndexHandler 计数器接口
@@ -49,6 +65,67 @@ func CounterHandler(w http.ResponseWriter, r *http.Request) {
 			res.ErrorMsg = err.Error()
 		} else {
 			res.Data = count
+		}
+	} else {
+		res.Code = -1
+		res.ErrorMsg = fmt.Sprintf("请求方法 %s 不支持", r.Method)
+	}
+
+	msg, err := json.Marshal(res)
+	if err != nil {
+		fmt.Fprint(w, "内部错误")
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(msg)
+}
+
+type request struct {
+	Message string `json:"message"`
+}
+
+func Chat(w http.ResponseWriter, r *http.Request) {
+	res := &JsonResult{}
+	var req request
+	var bd []byte
+	_, _ = r.Body.Read(bd)
+	_ = json.Unmarshal(bd, &req)
+
+	if r.Method == http.MethodPost {
+		client := resty.New()
+		apiKey := "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"
+		url := "https://api.openai.com/v1/completions"
+
+		response, err := client.R().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("Authorization", fmt.Sprintf("Bearer %s", apiKey)).
+			SetBody(map[string]interface{}{
+				"model":       "text-davinci-003",
+				"prompt":      req.Message,
+				"max_tokens":  1024,
+				"temperature": 0.5,
+				"top_p":       1,
+				"n":           1,
+				"stream":      false,
+			}).
+			Post(url)
+
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+		}
+		var gresp GptResponse
+		err = json.Unmarshal(response.Body(), &gresp)
+		if err != nil {
+			return
+		}
+		if len(gresp.Choices) == 0 {
+			return
+		}
+		if err != nil {
+			res.Code = -1
+			res.ErrorMsg = err.Error()
+		} else {
+			res.Data = gresp.Choices[0].Text
 		}
 	} else {
 		res.Code = -1
