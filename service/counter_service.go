@@ -10,7 +10,6 @@ import (
 	"wxcloudrun-golang/db/dao"
 	"wxcloudrun-golang/db/model"
 
-	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
 )
 
@@ -92,41 +91,42 @@ func Chat(w http.ResponseWriter, r *http.Request) {
 	_ = json.Unmarshal(bd, &req)
 
 	if r.Method == http.MethodPost {
-		client := resty.New()
-		apiKey := "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"
-		url := "https://api.openai.com/v1/completions"
-
-		response, err := client.R().
-			SetHeader("Content-Type", "application/json").
-			SetHeader("Authorization", fmt.Sprintf("Bearer %s", apiKey)).
-			SetBody(map[string]interface{}{
-				"model":       "text-davinci-003",
-				"prompt":      req.Message,
-				"max_tokens":  1024,
-				"temperature": 0.5,
-				"top_p":       1,
-				"n":           1,
-				"stream":      false,
-			}).
-			Post(url)
-
-		if err != nil {
-			fmt.Printf("Error: %s\n", err.Error())
-		}
-		var gresp GptResponse
-		err = json.Unmarshal(response.Body(), &gresp)
-		if err != nil {
-			return
-		}
-		if len(gresp.Choices) == 0 {
-			return
-		}
-		if err != nil {
-			res.Code = -1
-			res.ErrorMsg = err.Error()
-		} else {
-			res.Data = gresp.Choices[0].Text
-		}
+		//client := resty.New()
+		//apiKey := "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"
+		//url := "https://api.openai.com/v1/completions"
+		//
+		//response, err := client.R().
+		//	SetHeader("Content-Type", "application/json").
+		//	SetHeader("Authorization", fmt.Sprintf("Bearer %s", apiKey)).
+		//	SetBody(map[string]interface{}{
+		//		"model":       "text-davinci-003",
+		//		"prompt":      req.Message,
+		//		"max_tokens":  1024,
+		//		"temperature": 0.5,
+		//		"top_p":       1,
+		//		"n":           1,
+		//		"stream":      false,
+		//	}).
+		//	Post(url)
+		//
+		//if err != nil {
+		//	fmt.Printf("Error: %s\n", err.Error())
+		//}
+		//var gresp GptResponse
+		//err = json.Unmarshal(response.Body(), &gresp)
+		//if err != nil {
+		//	return
+		//}
+		//if len(gresp.Choices) == 0 {
+		//	return
+		//}
+		//if err != nil {
+		//	res.Code = -1
+		//	res.ErrorMsg = err.Error()
+		//} else {
+		//	res.Data = gresp.Choices[0].Text
+		//}
+		res.Data = "我是你爹"
 	} else {
 		res.Code = -1
 		res.ErrorMsg = fmt.Sprintf("请求方法 %s 不支持", r.Method)
