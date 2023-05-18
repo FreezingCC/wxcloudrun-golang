@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"wxcloudrun-golang/db"
 	"wxcloudrun-golang/db/model"
 )
@@ -38,6 +40,16 @@ func (sImp UserMaxScoreImp) GetScoreByUserId(userId string) (*model.UserMaxScore
 }
 
 func (sImp UserMaxScoreImp) UpdateScoreByUserId(userId string, score int32) error {
-	//TODO implement me
-	panic("implement me")
+	scoreM := model.UserMaxScore{
+		UserId: userId,
+		Score:  score,
+	}
+	cli := db.Get()
+	table := cli.Table("user_max_score")
+	_ = table.Clauses(
+		clause.OnConflict{Columns: []clause.Column{{Table: "user_max_score", Name: "user_id"}},
+			DoUpdates: clause.Set{{Column: clause.Column{Table: "user_max_score", Name: "score"},
+				Value: gorm.Expr("IF(score < ?, ?, score)", scoreM.Score, scoreM.Score)}}},
+	).Create(&scoreM)
+	return nil
 }

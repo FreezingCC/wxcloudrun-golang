@@ -137,7 +137,7 @@ func GetScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res.Code = success
-	res.Data = map[string]int{"score": userScore.Score}
+	res.Data = map[string]int32{"score": userScore.Score}
 	msg, err := json.Marshal(res)
 	if err != nil {
 		fmt.Fprint(w, "内部错误")

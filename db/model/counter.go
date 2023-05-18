@@ -13,7 +13,7 @@ type CounterModel struct {
 type UserMaxScore struct {
 	Id          int32     `gorm:"column:id" json:"id"`
 	UserId      string    `gorm:"column:user_id" json:"user_id"`
-	Score       int       `gorm:"column:score" json:"score"`
+	Score       int32     `gorm:"column:score" json:"score"`
 	CreateTime  time.Time `gorm:"column:create_time" json:"create_time"`
 	UpdatedTime time.Time `gorm:"column:update_time" json:"updated_time"`
 }
