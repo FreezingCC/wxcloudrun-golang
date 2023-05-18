@@ -31,8 +31,10 @@ func (imp *CounterInterfaceImp) GetCounter(id int32) (*model.CounterModel, error
 }
 
 func (sImp UserMaxScoreImp) GetScoreByUserId(userId string) (*model.UserMaxScore, error) {
-	//TODO implement me
-	panic("implement me")
+	cli := db.Get()
+	var score = new(model.UserMaxScore)
+	err := cli.Table("user_max_score").Where("user_id = ?", userId).First(score).Error
+	return score, err
 }
 
 func (sImp UserMaxScoreImp) UpdateScoreByUserId(userId string, score int32) error {
