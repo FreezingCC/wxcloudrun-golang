@@ -98,10 +98,10 @@ func UploadScore(w http.ResponseWriter, r *http.Request) {
 	}
 	var req scoreUploadReq
 	var bd []byte
-	_, _ = r.Body.Read(bd)
+	bd, err := ioutil.ReadAll(r.Body)
 	_ = json.Unmarshal(bd, &req)
 
-	err := dao.UserMaxScore.UpdateScoreByUserId(req.UserId, req.Score)
+	err = dao.UserMaxScore.UpdateScoreByUserId(req.UserId, req.Score)
 	if err != nil {
 		msg, _ := json.Marshal(res)
 		w.Header().Set("content-type", "application/json")
@@ -126,7 +126,7 @@ func GetScore(w http.ResponseWriter, r *http.Request) {
 	}
 	var req scoreUploadReq
 	var bd []byte
-	_, _ = r.Body.Read(bd)
+	bd, err := ioutil.ReadAll(r.Body)
 	_ = json.Unmarshal(bd, &req)
 
 	userScore, err := dao.UserMaxScore.GetScoreByUserId(req.UserId)

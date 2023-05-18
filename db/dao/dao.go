@@ -3,6 +3,7 @@ package dao
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"time"
 	"wxcloudrun-golang/db"
 	"wxcloudrun-golang/db/model"
 )
@@ -40,9 +41,12 @@ func (sImp UserMaxScoreImp) GetScoreByUserId(userId string) (*model.UserMaxScore
 }
 
 func (sImp UserMaxScoreImp) UpdateScoreByUserId(userId string, score int32) error {
+	now := time.Now()
 	scoreM := model.UserMaxScore{
-		UserId: userId,
-		Score:  score,
+		UserId:      userId,
+		Score:       score,
+		CreateTime:  now,
+		UpdatedTime: now,
 	}
 	cli := db.Get()
 	table := cli.Table("user_max_score")
