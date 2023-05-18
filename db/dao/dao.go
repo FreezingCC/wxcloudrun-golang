@@ -29,3 +29,13 @@ func (imp *CounterInterfaceImp) GetCounter(id int32) (*model.CounterModel, error
 
 	return counter, err
 }
+
+func (sImp UserMaxScoreImp) GetScoreByUserId(userId string) (*model.UserMaxScore, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (sImp UserMaxScoreImp) UpdateScoreByUserId(userId string, score int32) error {
+	//TODO implement me
+	panic("implement me")
+}

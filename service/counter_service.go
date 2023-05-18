@@ -21,6 +21,11 @@ type JsonResult struct {
 	Data     interface{} `json:"data"`
 }
 
+const (
+	success = 200
+	failed  = 500
+)
+
 type GptResponse struct {
 	Id      string    `json:"id"`
 	Object  string    `json:"object"`
@@ -71,6 +76,68 @@ func CounterHandler(w http.ResponseWriter, r *http.Request) {
 		res.ErrorMsg = fmt.Sprintf("请求方法 %s 不支持", r.Method)
 	}
 
+	msg, err := json.Marshal(res)
+	if err != nil {
+		fmt.Fprint(w, "内部错误")
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(msg)
+}
+
+type scoreUploadReq struct {
+	UserId string `json:"user_id"`
+	Score  int32  `json:"score"`
+}
+
+func UploadScore(w http.ResponseWriter, r *http.Request) {
+	res := &JsonResult{
+		Code:     0,
+		ErrorMsg: "",
+		Data:     nil,
+	}
+	var req scoreUploadReq
+	var bd []byte
+	_, _ = r.Body.Read(bd)
+	_ = json.Unmarshal(bd, &req)
+
+	err := dao.UserMaxScore.UpdateScoreByUserId(req.UserId, req.Score)
+	if err != nil {
+		msg, _ := json.Marshal(res)
+		w.Header().Set("content-type", "application/json")
+		w.Write(msg)
+		return
+	}
+	res.Code = success
+	msg, err := json.Marshal(res)
+	if err != nil {
+		fmt.Fprint(w, "内部错误")
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(msg)
+}
+
+func GetScore(w http.ResponseWriter, r *http.Request) {
+	res := &JsonResult{
+		Code:     0,
+		ErrorMsg: "",
+		Data:     nil,
+	}
+	var req scoreUploadReq
+	var bd []byte
+	_, _ = r.Body.Read(bd)
+	_ = json.Unmarshal(bd, &req)
+
+	userScore, err := dao.UserMaxScore.GetScoreByUserId(req.UserId)
+	if err != nil {
+		msg, _ := json.Marshal(res)
+		w.Header().Set("content-type", "application/json")
+		w.Write(msg)
+		return
+	}
+	res.Code = success
+	res.Data = map[string]int{"score": userScore.Score}
 	msg, err := json.Marshal(res)
 	if err != nil {
 		fmt.Fprint(w, "内部错误")

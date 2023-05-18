@@ -16,3 +16,13 @@ type CounterInterfaceImp struct{}
 
 // Imp 实现实例
 var Imp CounterInterface = &CounterInterfaceImp{}
+
+type UserMaxScoreInterface interface {
+	GetScoreByUserId(userId string) (*model.UserMaxScore, error)
+	UpdateScoreByUserId(userId string, score int32) error
+}
+
+type UserMaxScoreImp struct {
+}
+
+var UserMaxScore UserMaxScoreInterface = &UserMaxScoreImp{}
