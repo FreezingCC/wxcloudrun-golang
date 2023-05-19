@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"wxcloudrun-golang/db/dao"
@@ -12,6 +13,8 @@ import (
 
 	"gorm.io/gorm"
 )
+
+var SECRETKEY = os.Getenv("APP_SECRET_KEY")
 
 // JsonResult 返回结构
 type JsonResult struct {
@@ -200,6 +203,58 @@ func Chat(w http.ResponseWriter, r *http.Request) {
 	//}
 
 	res.Data = "我是你爹"
+	msg, err := json.Marshal(res)
+	if err != nil {
+		fmt.Fprint(w, "内部错误")
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(msg)
+}
+
+type JsCodeReq struct {
+	Code string `json:"code"`
+}
+
+func GetUserId(w http.ResponseWriter, r *http.Request) {
+	res := &JsonResult{
+		Code:     0,
+		ErrorMsg: "",
+		Data:     nil,
+	}
+	var req JsCodeReq
+	var bd []byte
+	bd, _ = ioutil.ReadAll(r.Body)
+	_ = json.Unmarshal(bd, &req) // 从请求中获取登录凭证 code
+
+	// 构建 GET 请求 URL
+	url := fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=wxb3fa7c7530beebe5&secret="+SECRETKEY+"&js_code=%s&grant_type=authorization_code", req.Code)
+
+	// 发送 GET 请求到微信服务器
+	response, err := http.Get(url)
+	if err != nil {
+		http.Error(w, "登录失败", http.StatusInternalServerError)
+		return
+	}
+	defer response.Body.Close()
+
+	// 读取响应体数据
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		http.Error(w, "登录失败", http.StatusInternalServerError)
+		return
+	}
+
+	// 解析 JSON 响应
+	var data struct {
+		OpenID string `json:"openid"`
+	}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		http.Error(w, "登录失败", http.StatusInternalServerError)
+		return
+	}
+	res.Data = map[string]string{"openid": data.OpenID}
 	msg, err := json.Marshal(res)
 	if err != nil {
 		fmt.Fprint(w, "内部错误")

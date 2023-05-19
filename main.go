@@ -18,6 +18,7 @@ func main() {
 	http.HandleFunc("/api/chat", service.Chat)
 	http.HandleFunc("/api/updateScore", service.UploadScore)
 	http.HandleFunc("/api/score", service.GetScore)
+	http.HandleFunc("/api/getUserId", service.GetUserId)
 
 	log.Fatal(http.ListenAndServe(":80", nil))
 }
